@@ -1,7 +1,7 @@
 
 import fetch from 'node-fetch'
-import { URL, URLSearchParams } from 'url';
-import moment from 'moment'
+import { URL, URLSearchParams } from 'url'
+import { DateTime } from 'luxon'
 import ical from 'ical-generator'
 import NodeCache from 'node-cache'
 
@@ -20,10 +20,11 @@ const domain = process.env.MATT_DOMAIN || 'example.com'
 const company = process.env.MATT_COMPANY || 'Acme Inc.'
 const product = process.env.MATT_PRODUCT || 'Example Product'
 const summary = process.env.MATT_SUMMARY || 'POST'
+const timezone = process.env.MATT_TIMEZONE || 'Europe/Oslo'
 const name = process.env.MATT_NAME || 'Matt'
 const cacheTTL = process.env.MATT_CACHE_TTL || 600
 const cacheCheckPeriod = process.env.MATT_CACHE_CHECKPERIOD || 600
-
+const dev = process.env.NODE_ENV === 'development'
 
 const cache = new NodeCache({
   stdTTL: cacheTTL,
@@ -36,17 +37,13 @@ app.use(cors())
 app.use(compression())
 app.use(responseTime())
 
-if (process.env.NODE_ENV === 'development') {
+if (dev) {
   // only use in development
   app.use(morgan('dev'))
   app.use(errorHandler())
 } else {
   app.use(morgan('combined'))
 }
-
-
-// Posten returns Norwegian dates
-moment.locale('nb')
 
 app.get('^/:postCode([0-9]{4})', async (req, res) => {
   doTheThing(res, req.params.postCode)
@@ -56,24 +53,30 @@ app.get('*', (req, res) => {
   doTheThing(res, 0)
 })
 
+app.all('*', (req, res) => {
+  res.status(404)
+})
+
 app.listen(port, () => {
   console.log(`Listening at http://localhost:${port}`)
 })
 
-
 const doTheThing = async (res, postCode) => {
-  let schedule = cache.get(postCode)
-  console.log(`${postCode} in cache: ${schedule != null}`)
-  if (!schedule) {
-    schedule = await fetchSchedule(postCode)
-    cache.set(postCode, schedule)
+  let calendar = cache.get(postCode)
+
+  if (dev) console.log(`Post code ${postCode} ${calendar != null ? '' : 'not '}found in cache`)
+
+  if (!calendar) {
+    if (dev) console.log(`Fetching schedule for post code ${postCode}`)
+    const schedule = await fetchSchedule(postCode)
+    calendar = generateCalendar(schedule)
+    cache.set(postCode, calendar)
   }
-  const calendar = generateCalendar(schedule)
 
   res.set({
     'Content-Type': 'text/calendar; charset=utf-8',
     'Content-Disposition': 'attachment; filename="calendar.ics"',
-    'Date': moment(),
+    'Date': DateTime.now(),
     'Connection': 'keep-alive',
     'Keep-Alive': 'timeout=5',
   })
@@ -96,15 +99,22 @@ const fetchSchedule = async (postCode) => {
     
     const result = await res.json()
     
-    const today = moment();
+    if (dev) console.log('result', result)
+
+    const today = DateTime.now().startOf('day')
     const schedule = result.nextDeliveryDays?.reduce((agg, val) => {
-      let d = moment(val.match(/(\d+\.\s+\w+)$/)[0], 'D. MMMM')
-      if (d < today) d.add(1, 'y')
+      // Posten returns Norwegian dates
+      let d = DateTime.fromFormat(val.match(/(\d+\.\s+\w+)$/)[0], 'd. LLLL', { locale: 'no' })
+
+      if (d < today) {
+        d.add(1, 'y')
+        if (dev) console.log(`Year rollover: ${d}`)
+      }
       
-      agg.push(d)
-      return agg
+      return agg.concat(d.toISODate())
     }, [])
     
+    if (dev) console.log('schedule', schedule)
     return schedule
   } catch (err) {
     return []
@@ -119,16 +129,12 @@ const generateCalendar = (schedule) => {
       product
     },
     name,
-    events: schedule.reduce((agg, val) => {
-      const ev = {
-          start: val,
-          allDay: true,
-          summary,
-          timezone: 'Europe/Oslo'
-      }
-      agg.push(ev)
-      return agg
-    }, [])
+    timezone,
+    events: schedule.reduce((agg, val) => agg.concat({
+      start: val,
+      allDay: true,
+      summary
+    }), [])
   }).toString()
 
   return `${cal}\n`
