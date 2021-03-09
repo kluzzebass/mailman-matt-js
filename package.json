@@ -1,12 +1,16 @@
 {
   "name": "mailman-matt",
   "version": "1.0.0",
-  "description": "This module looks up the mail delivery dates at a given Norwegian postal code.",
+  "description": "This service looks up the mail delivery dates at a given Norwegian postal code and presents it as an iCal file.",
   "type": "module",
   "main": "index.js",
   "scripts": {
     "serve": "node --icu-data-dir=./node_modules/full-icu .",
-    "dev": "NODE_ENV=development nodemon --icu-data-dir=./node_modules/full-icu ."
+    "dev": "NODE_ENV=development nodemon --icu-data-dir=./node_modules/full-icu .",
+    "docker-build": "docker build -t kluzz/mailman-matt .",
+    "docker-run": "docker run -p 3000:3000 -d --name mailman-matt kluzz/mailman-matt",
+    "docker-kill": "docker rm -f mailman-matt",
+    "docker-cli": "docker exec -it mailman-matt bash"
   },
   "author": "Jan Fredrik Leversund <kluzz@radical.org>",
   "license": "MIT",

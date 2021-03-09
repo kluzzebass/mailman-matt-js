@@ -4,7 +4,6 @@ import { URL, URLSearchParams } from 'url'
 import { DateTime } from 'luxon'
 import ical from 'ical-generator'
 import NodeCache from 'node-cache'
-
 import express from 'express'
 import cors from'cors'
 import errorHandler from 'errorhandler'
