@@ -12,6 +12,8 @@ import compression from 'compression'
 import responseTime from 'response-time'
 
 // Configuration things
+const dev = process.env.NODE_ENV === 'development'
+
 const port = process.env.MATT_PORT || 3000
 const apiUrl = process.env.MATT_API_URL || 'https://www.posten.no/levering-av-post-2020/_/component/main/1/leftRegion/1'
 const apiTimeout = process.env.MATT_API_TIMEOUT || 3000
@@ -23,7 +25,7 @@ const timezone = process.env.MATT_TIMEZONE || 'Europe/Oslo'
 const name = process.env.MATT_NAME || 'Matt'
 const cacheTTL = process.env.MATT_CACHE_TTL || 600
 const cacheCheckPeriod = process.env.MATT_CACHE_CHECKPERIOD || 600
-const dev = process.env.NODE_ENV === 'development'
+const logFormat = process.env.MATT_LOG_FORMAT || (dev ? 'dev' : 'combined')
 
 const cache = new NodeCache({
   stdTTL: cacheTTL,
@@ -35,13 +37,11 @@ const app = express()
 app.use(cors())
 app.use(compression())
 app.use(responseTime())
+app.use(morgan(logFormat))
 
 if (dev) {
   // only use in development
-  app.use(morgan('dev'))
   app.use(errorHandler())
-} else {
-  app.use(morgan('combined'))
 }
 
 app.get('^/:postCode([0-9]{4})', async (req, res) => {
