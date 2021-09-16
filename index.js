@@ -15,7 +15,7 @@ import responseTime from 'response-time'
 const dev = process.env.NODE_ENV === 'development'
 
 const port = process.env.MATT_PORT || 3000
-const apiUrl = process.env.MATT_API_URL || 'https://www.posten.no/levering-av-post-2020/_/component/main/1/leftRegion/1'
+const apiUrl = process.env.MATT_API_URL || 'https://www.posten.no/levering-av-post/_/component/main/1/leftRegion/1'
 const apiTimeout = process.env.MATT_API_TIMEOUT || 3000
 const domain = process.env.MATT_DOMAIN || 'example.com'
 const company = process.env.MATT_COMPANY || 'Acme Inc.'
