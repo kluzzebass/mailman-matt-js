@@ -1,0 +1,62 @@
+{
+  "$schema": "https://deno.land/x/denon/schema.json",
+  "allow": {
+    "env": true,
+    "net": true,
+    "read": "./.env,./.env.defaults"
+  },
+  "watcher": {
+    "exts": ["js", "jsx", "ts", "tsx", "json", "sql", ".env", ".env.defaults"],
+    "match": ["**/*.*"],
+    "skip": ["*/.git/*", "*/db/*"]
+  },
+  "logger": {
+    "fullscreen": false,
+    "quiet": true,
+    "debug": false
+  },
+  "scripts": {
+    "start": {
+      "cmd": "main.js",
+      "desc": "run the service",
+      "unstable": true,
+      "watch": false
+    },
+    "dev": {
+      "cmd": "main.js",
+      "desc": "run the service in development mode",
+      "unstable": true,
+      "inspect": "127.0.0.1:9229"
+    },
+    "docker-build": {
+      "cmd": "docker build -t kluzz/mailman-matt .",
+      "desc": "build the docker image",
+      "unstable": true,
+      "watch": false
+    },
+    "docker-push": {
+      "cmd": "docker push kluzz/mailman-matt",
+      "desc": "push the docker image to hub",
+      "unstable": true,
+      "watch": false
+    },
+    "docker-run": {
+      "cmd": "docker run -p 3000:3000 -d --name mailman-matt kluzz/mailman-matt",
+      "desc": "create and run container from image",
+      "unstable": true,
+      "watch": false
+    },
+    "docker-kill": {
+      "cmd": "docker rm -f mailman-matt",
+      "desc": "kill the docker container",
+      "unstable": true,
+      "watch": false
+    },
+    "docker-cli": {
+      "cmd": "docker exec -it mailman-matt /bin/sh",
+      "desc": "attach to the docker container",
+      "unstable": true,
+      "watch": false
+    }
+  }
+}
