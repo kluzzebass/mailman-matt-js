@@ -101,12 +101,15 @@ const fetchSchedule = async (postCode) => {
     if (dev) console.log('result', result)
 
     const today = DateTime.now().startOf('day')
+
     const schedule = result.nextDeliveryDays?.reduce((agg, val) => {
       // Posten returns Norwegian dates
+      if (dev) console.log(`Parsing date: ${val}`)
       let d = DateTime.fromFormat(val.match(/(\d+\.\s+\w+)$/)[0], 'd. LLLL', { locale: 'no' })
+      if (dev) console.log(`Found date: ${d}`)
 
       if (d < today) {
-        d.add(1, 'y')
+        d.plus({ years: 1})
         if (dev) console.log(`Year rollover: ${d}`)
       }
       
