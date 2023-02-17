@@ -12,7 +12,7 @@ const env = Deno.env.toObject()
 // Configuration things
 const dev = env.NODE_ENV === 'development'
 const port = env.MATT_PORT || 3000
-const apiUrl = env.MATT_API_URL || 'https://www.posten.no/levering-av-post/_/component/main/1/leftRegion/1'
+const apiUrl = env.MATT_API_URL || 'https://www.posten.no/levering-av-post/_/component/main/1/leftRegion/9'
 const apiTimeout = env.MATT_API_TIMEOUT || 3000
 const domain = env.MATT_DOMAIN || 'example.com'
 const company = env.MATT_COMPANY || 'Acme Inc.'
