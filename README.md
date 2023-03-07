@@ -1,2 +1,3 @@
 # mailman-matt
-This module looks up the mail delivery dates at a given Norwegian postal code.
+
+This repo has been supplanted by https://github.com/kluzzebass/mailman-matt-go and will no longer be maintained.
